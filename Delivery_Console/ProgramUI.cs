@@ -123,11 +123,13 @@ class ProgramUI {
     private void UpdateDeliveryItem() {
         Console.Clear();
 
-        DeliveryItem newItem = new DeliveryItem();
-
         System.Console.WriteLine("Please enter the name of the item you would like to update.");
+        
+        DeliveryItem newItem = new DeliveryItem();
+        
         string itemName = newItem.ItemName;
         newItem.ItemName = Console.ReadLine();
+        
 
     System.Console.WriteLine("Please enter a new quantity for the item. If you don't wish to change it please press enter.");
     newItem.ItemQuantity = int.Parse(Console.ReadLine());
@@ -137,9 +139,19 @@ class ProgramUI {
     + "2. EnRoute\n"
     + "3. Complete\n"
     + "4. Canceled\n");
-    string? statusString = Console.ReadLine();
-    int statusInt = int.Parse(statusString);
-    newItem.Status = (Status)statusInt;
+    // string? statusString = Console.ReadLine();
+    // int statusInt = int.Parse(statusString);
+    // newItem.Status = (Status)statusInt;
+
+    try {
+        string? statusString = Console.ReadLine();
+        int statusInt = int.Parse(statusString);
+        newItem.Status = (Status)statusInt;
+    } 
+    catch (FormatException e) 
+    {
+        System.Console.WriteLine(e.Message);
+    }
     
 
     bool updateSuccess = _repo.UpdateDeliveryItem(itemName, newItem);
