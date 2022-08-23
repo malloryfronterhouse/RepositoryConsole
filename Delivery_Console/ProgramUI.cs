@@ -1,3 +1,4 @@
+using System.Net.WebSockets;
 namespace Delivery_Class;
 class ProgramUI {
     RepositoryConsoleApp _repo = new RepositoryConsoleApp();
@@ -17,7 +18,8 @@ class ProgramUI {
         + "2. List all deliveries.\n"
         + "3. Update a delivery item.\n"
         + "4. Cancel a delivery.\n"
-        + "5. Exit.");
+        + "5. View EnRoute or Complete deliveries.\n"
+        + "6. Exit");
         string? userResponse = Console.ReadLine();
         switch(userResponse) {
             case "1":
@@ -33,6 +35,9 @@ class ProgramUI {
             RemoveDeliveryItem();
             break;
             case "5":
+            ViewEnRouteOrComplete();
+            break;
+            case "6":
             System.Console.WriteLine("See you later!");
             keepRunning = false;
             break;
@@ -42,6 +47,41 @@ class ProgramUI {
             }
             System.Console.WriteLine("Press any key to continue...");
             Console.ReadKey();
+        }
+    }
+
+    private void ViewEnRouteOrComplete() {
+
+        bool deliveryEnrouteOrComplete = true;
+        while (deliveryEnrouteOrComplete)
+        {
+            Console.Clear();
+
+            foreach (DeliveryItem item in _repo.GetAllDeliveries())
+            {
+                System.Console.WriteLine("Would you like to view Completed Deliveries or EnRoute Deliveries?\n"
+                + "2. EnRoute Deliveries\n"
+                + "3. Completed Deliveries\n"
+                + "4. Main Menu");
+                string? deliveryStatusString = Console.ReadLine();
+
+                switch (deliveryStatusString)
+                {
+                    case "2":
+                    case "3":
+                    int completeInt = int.Parse(deliveryStatusString);
+                    item.Status = (Status)completeInt;
+                    DisplayItem(item);
+                        break;
+                    case "4":
+                    System.Console.WriteLine("Not EnRoute or Complete");
+                    deliveryEnrouteOrComplete = false;
+                        break;
+                    default:
+                    System.Console.WriteLine("Incorrect Response. Please try again.");
+                        break;
+                }
+            }
         }
     }
     private void AddDeliveryItem() {
@@ -60,7 +100,7 @@ class ProgramUI {
         bool itemCreated = _repo.AddDeliveryItem(newItem);
     if(itemCreated) {
         Console.Clear();
-        System.Console.WriteLine("Item succdessfully created.\n");
+        System.Console.WriteLine("Item successfully created.\n");
     }
     else
     {
@@ -87,10 +127,15 @@ class ProgramUI {
     System.Console.WriteLine("Please enter a new quantity for the item. If you don't wish to change it please press enter.");
     newItem.ItemQuantity = int.Parse(Console.ReadLine());
 
-    System.Console.WriteLine("Please enter the updated status for the item. If no changes are needed please press enter.");
-//System.Console.WriteLine("Please enter the updated status for the item. If no changes are needed please press enter.");
-    //string status = newItem.Status;
-    newItem.Status = Console.ReadLine();
+    System.Console.WriteLine($"Please enter the updated status for the item. If no changes are needed please press enter."
+    + "1. Complete\n"
+    + "2. EnRoute\n"
+    + "3. Scheduled\n"
+    + "4. Canceled\n");
+    string? statusString = Console.ReadLine();
+    int statusInt = int.Parse(statusString);
+    newItem.Status = (Status)statusInt;
+    
 
     bool updateSuccess = _repo.UpdateDeliveryItem(itemName, newItem);
 
@@ -121,22 +166,32 @@ class ProgramUI {
         }
         }
     private void DisplayItem(DeliveryItem item) {
-        System.Console.WriteLine($"{item.ItemName}.\n"
-        + "------------\n"
-        + $"Order #: {item.OrderNumber} for {item.ItemName} was ordered on {item.OrderDate}.\n"
-        + $"You ordered {item.ItemQuantity} of {item.ItemName}.\n"
-        + $"It's {item.Status} and will be delivered on {item.DeliveryDate}\n"
-        + $"Please feel free to check back on you order at any time using your Customer ID #: {item.CustomerID}\n");
+        // System.Console.WriteLine($"{item.ItemName}\n"
+        // + "------------\n"
+        // + $"Order #{item.OrderNumber} for {item.ItemName} was ordered on {item.OrderDate}.\n"
+        // + $"You ordered {item.ItemQuantity} of {item.ItemName}.\n"
+        // + $"It's status is {item.Status}"
+        // + $"It will be delivered on {item.DeliveryDate}\n"
+        // + $"Please feel free to check back on you order at any time using your Customer ID #: {item.CustomerID}\n");
+        // //+ $"{(item.IsCompleteOrEnRoute ? "this item is Complete or Enroute" : "this item is NOT Complete or EnRoute")}");
+        // + $@"{(item.IsCompleteOrEnRoute ? "this item is complete or enroute" : "this item is NOT complete or enroute!")}");
+        System.Console.WriteLine($@"Item: {item.ItemName} | Item Quantity: {item.ItemQuantity}
+        Order Date: {item.OrderDate} | Delivery Date: {item.DeliveryDate}
+        Status: {item.Status} ---------- Order Number: {item.OrderNumber}
+        Please feel free to check on your order at any time using your Customer ID: {item.CustomerID}
+        Your order is: {item.Status}");
     }
     private void Seed(){
-        DeliveryItem laptop = new DeliveryItem(_repo.GetAllDeliveries().Count + 1, new DateTime(2022, 08, 15), new DateTime(2022, 08, 21), "Complete", "HP Laptop", 5, 001);
+        DeliveryItem laptop = new DeliveryItem(_repo.GetAllDeliveries().Count + 1, new DateTime(2022, 08, 15), new DateTime(2022, 08, 21), Status.Complete, "HP Laptop", 5, 001);
         _repo.AddDeliveryItem(laptop);
-        DeliveryItem vacuum = new DeliveryItem(_repo.GetAllDeliveries().Count + 1, new DateTime(2022, 08, 21), new DateTime(2022, 08, 24), "Scheduled", "Dyson Vacuum", 1, 005);
+        System.Console.WriteLine();
+        DeliveryItem vacuum = new DeliveryItem(_repo.GetAllDeliveries().Count + 1, new DateTime(2022, 08, 21), new DateTime(2022, 08, 24), Status.EnRoute, "Dyson Vacuum", 1, 005);
         _repo.AddDeliveryItem(vacuum);
-        DeliveryItem couch = new DeliveryItem(_repo.GetAllDeliveries().Count + 1, new DateTime(2022, 08, 12), new DateTime(2022, 08, 21), "EnRoute", "Big Comfy Couch", 2, 007);
+        System.Console.WriteLine();
+        DeliveryItem couch = new DeliveryItem(_repo.GetAllDeliveries().Count + 1, new DateTime(2022, 08, 12), new DateTime(2022, 08, 21), Status.Scheduled, "Big Comfy Couch", 2, 007);
         _repo.AddDeliveryItem(couch);
-        DeliveryItem bookcase = new DeliveryItem(_repo.GetAllDeliveries().Count +1, new DateTime(2022, 08, 16), new DateTime(2022, 08, 16), "Canceled", "Gray Bookcase", 7, 009);
+        System.Console.WriteLine();
+        DeliveryItem bookcase = new DeliveryItem(_repo.GetAllDeliveries().Count +1, new DateTime(2022, 08, 16), new DateTime(2022, 08, 16), Status.Canceled, "Gray Bookcase", 7, 009);
         _repo.AddDeliveryItem(bookcase);
     }
-    // int orderNumber, DateTime orderDate, DateTime deliveryDate, Status status, string itemName, , int itemQuantity, int customerID
 }
