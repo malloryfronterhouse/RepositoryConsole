@@ -127,8 +127,8 @@ class ProgramUI {
         
         DeliveryItem newItem = new DeliveryItem();
         
-        string itemName = newItem.ItemName;
         newItem.ItemName = Console.ReadLine();
+        string itemName = newItem.ItemName;
         
 
     System.Console.WriteLine("Please enter a new quantity for the item. If you don't wish to change it please press enter.");
@@ -139,9 +139,6 @@ class ProgramUI {
     + "2. EnRoute\n"
     + "3. Complete\n"
     + "4. Canceled\n");
-    // string? statusString = Console.ReadLine();
-    // int statusInt = int.Parse(statusString);
-    // newItem.Status = (Status)statusInt;
 
     try {
         string? statusString = Console.ReadLine();
